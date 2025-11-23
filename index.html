@@ -3,1945 +3,228 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="学生カフェの総合管理ツール - 会計・開発・広報を一元管理">
-  <meta name="theme-color" content="#2D8B5F">
-  <link rel="manifest" href="./manifest.json">
-  <title>MERRILY カフェ管理システム - 会計分析版</title>
+  <title>MERRILY カフェ管理システム</title>
   <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
   <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&family=Noto+Sans+JP:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <style>
     * { margin: 0; padding: 0; box-sizing: border-box; }
-    
-    :root {
-      --merrily-green: #2D8B5F;
-      --merrily-green-light: #E8F5E9;
-      --merrily-green-dark: #1a5a3a;
-      --merrily-brown: #8B3A3A;
-      --merrily-brown-light: #FFF3E0;
-      --merrily-yellow: #DAA520;
-      --merrily-yellow-light: #FFF9E6;
-      --bg-primary: #FFFFFF;
-      --bg-secondary: #F8F9FA;
-      --bg-card: #FFFFFF;
-      --text-primary: #2C3E50;
-      --text-secondary: #7F8C8D;
-      --border-color: #E0E0E0;
-      --shadow: 0 2px 8px rgba(0,0,0,0.08);
-      --shadow-hover: 0 4px 16px rgba(0,0,0,0.12);
-    }
-
-    body {
-      font-family: 'Noto Sans JP', sans-serif;
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-    }
-
-    h1, h2, h3 { font-family: 'Playfair Display', serif; font-weight: 600; }
-
-    .error-message, .success-message, .debug-info, .warning-message {
-      padding: 12px 16px;
-      border-radius: 8px;
-      margin-bottom: 16px;
-      font-size: 14px;
-    }
-    .error-message { background: #fee; color: #c00; border: 1px solid #fcc; white-space: pre-wrap; }
-    .success-message { background: #e8f5e9; color: #2e7d32; border: 1px solid #81c784; }
-    .warning-message { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
-    .debug-info { background: #e3f2fd; color: #1976d2; border: 1px solid #90caf9; font-family: monospace; font-size: 12px; max-height: 300px; overflow-y: auto; white-space: pre-wrap; }
-
-    .login-container {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      background: linear-gradient(135deg, var(--merrily-green-light) 0%, var(--merrily-yellow-light) 100%);
-      padding: 20px;
-    }
-
-    .login-card {
-      background: var(--bg-card);
-      border-radius: 24px;
-      box-shadow: var(--shadow-hover);
-      padding: 48px;
-      max-width: 550px;
-      width: 100%;
-      max-height: 90vh;
-      overflow-y: auto;
-    }
-
-    .logo-container { text-align: center; margin-bottom: 32px; }
-    .logo-text {
-      font-size: 48px;
-      font-weight: 700;
-      background: linear-gradient(135deg, var(--merrily-green) 0%, var(--merrily-brown) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-      letter-spacing: 2px;
-    }
-    .logo-subtitle {
-      font-size: 12px;
-      color: var(--text-secondary);
-      margin-top: 8px;
-      letter-spacing: 3px;
-      text-transform: uppercase;
-    }
-
-    .form-group { margin-bottom: 20px; }
-    .form-label {
-      display: block;
-      margin-bottom: 8px;
-      font-weight: 500;
-      color: var(--text-primary);
-      font-size: 14px;
-    }
-    .form-input, .form-select {
-      width: 100%;
-      padding: 12px 16px;
-      border: 2px solid var(--border-color);
-      border-radius: 12px;
-      font-size: 15px;
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      font-family: 'Noto Sans JP', sans-serif;
-      transition: all 0.3s ease;
-    }
-    .form-input:focus, .form-select:focus {
-      outline: none;
-      border-color: var(--merrily-green);
-      box-shadow: 0 0 0 3px var(--merrily-green-light);
-    }
-
-    .form-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-    }
-
-    .btn {
-      padding: 14px 24px;
-      border: none;
-      border-radius: 12px;
-      font-size: 15px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-family: 'Noto Sans JP', sans-serif;
-    }
-    .btn-primary {
-      background: linear-gradient(135deg, var(--merrily-green) 0%, var(--merrily-green-dark) 100%);
-      color: white;
-    }
-    .btn-primary:hover:not(:disabled) {
-      transform: translateY(-2px);
-      box-shadow: 0 8px 16px rgba(45, 139, 95, 0.3);
-    }
-    .btn-primary:disabled {
-      opacity: 0.6;
-      cursor: not-allowed;
-    }
-
-    .btn-success {
-      padding: 12px 24px;
-      background: var(--merrily-green);
-      color: white;
-      border: none;
-      border-radius: 12px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .btn-secondary {
-      padding: 10px 20px;
-      background: var(--bg-secondary);
-      color: var(--text-primary);
-      border: 1px solid var(--border-color);
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-size: 14px;
-    }
-
-    .btn-danger {
-      padding: 10px 20px;
-      background: var(--merrily-brown);
-      color: white;
-      border: none;
-      border-radius: 10px;
-      font-weight: 600;
-      cursor: pointer;
-      font-size: 14px;
-    }
-
-    .dashboard { display: flex; min-height: 100vh; }
-    
-    .sidebar {
-      width: 280px;
-      background: var(--bg-card);
-      border-right: 1px solid var(--border-color);
-      position: fixed;
-      height: 100vh;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-    }
-    .sidebar-header { padding: 24px; border-bottom: 1px solid var(--border-color); }
-    .sidebar-logo {
-      font-size: 28px;
-      font-weight: 700;
-      background: linear-gradient(135deg, var(--merrily-green) 0%, var(--merrily-brown) 100%);
-      -webkit-background-clip: text;
-      -webkit-text-fill-color: transparent;
-      background-clip: text;
-    }
-
-    .user-info {
-      margin-top: 16px;
-      padding: 12px;
-      background: var(--bg-secondary);
-      border-radius: 12px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-
-    .user-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--merrily-green) 0%, var(--merrily-yellow) 100%);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      font-weight: 600;
-      font-size: 18px;
-    }
-
-    .sidebar-nav { flex: 1; padding: 16px; }
-    .nav-section { margin-bottom: 24px; }
-    .nav-section-title {
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--text-secondary);
-      text-transform: uppercase;
-      letter-spacing: 1px;
-      margin-bottom: 12px;
-      padding: 0 12px;
-    }
-    .nav-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      padding: 12px 16px;
-      border-radius: 12px;
-      color: var(--text-primary);
-      cursor: pointer;
-      transition: all 0.2s ease;
-      margin-bottom: 4px;
-    }
-    .nav-item:hover { background: var(--merrily-green-light); }
-    .nav-item.active { background: var(--merrily-green); color: white; }
-
-    .sidebar-footer { padding: 16px; border-top: 1px solid var(--border-color); }
-
-    .main-content {
-      flex: 1;
-      margin-left: 280px;
-      padding: 32px;
-      overflow-y: auto;
-    }
-
-    .page-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 32px;
-    }
-    .page-title {
-      font-size: 32px;
-      color: var(--text-primary);
-    }
-
-    .stats-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-      gap: 24px;
-      margin-bottom: 32px;
-    }
-
-    .stat-card {
-      background: var(--bg-card);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: var(--shadow);
-      transition: transform 0.3s ease, box-shadow 0.3s ease;
-    }
-    .stat-card:hover {
-      transform: translateY(-4px);
-      box-shadow: var(--shadow-hover);
-    }
-
-    .stat-label {
-      font-size: 14px;
-      color: var(--text-secondary);
-      margin-bottom: 8px;
-      font-weight: 500;
-    }
-
-    .stat-value {
-      font-size: 32px;
-      font-weight: 700;
-      color: var(--text-primary);
-      margin-bottom: 12px;
-    }
-
-    .stat-change {
-      font-size: 13px;
-      font-weight: 600;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-      padding: 4px 8px;
-      border-radius: 6px;
-    }
-
-    .stat-change.positive {
-      color: var(--merrily-green-dark);
-      background: var(--merrily-green-light);
-    }
-
-    .stat-change.negative {
-      color: var(--merrily-brown);
-      background: var(--merrily-brown-light);
-    }
-
-    .card {
-      background: var(--bg-card);
-      border-radius: 16px;
-      padding: 24px;
-      box-shadow: var(--shadow);
-      margin-bottom: 24px;
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 24px;
-      padding-bottom: 16px;
-      border-bottom: 1px solid var(--border-color);
-    }
-
-    .card-title {
-      font-size: 20px;
-      font-weight: 600;
-      color: var(--text-primary);
-    }
-
-    .chart-container {
-      position: relative;
-      height: 350px;
-      margin-top: 16px;
-    }
-
-    .table-container {
-      overflow-x: auto;
-    }
-
-    .table {
-      width: 100%;
-      border-collapse: collapse;
-    }
-
-    .table thead {
-      background: var(--bg-secondary);
-      border-bottom: 2px solid var(--border-color);
-    }
-
-    .table th {
-      padding: 16px;
-      text-align: left;
-      font-weight: 600;
-      color: var(--text-primary);
-      font-size: 14px;
-      white-space: nowrap;
-    }
-
-    .table td {
-      padding: 16px;
-      border-bottom: 1px solid var(--border-color);
-      font-size: 14px;
-    }
-
-    .table tbody tr:hover {
-      background: var(--bg-secondary);
-    }
-
-    .badge {
-      padding: 6px 12px;
-      border-radius: 20px;
-      font-size: 12px;
-      font-weight: 600;
-      display: inline-block;
-    }
-
-    .badge-success {
-      background: var(--merrily-green-light);
-      color: var(--merrily-green-dark);
-    }
-
-    .badge-warning {
-      background: var(--merrily-yellow-light);
-      color: #8B6914;
-    }
-
-    .badge-danger {
-      background: var(--merrily-brown-light);
-      color: var(--merrily-brown);
-    }
-
-    .filter-group {
-      display: flex;
-      gap: 16px;
-      margin-bottom: 24px;
-      flex-wrap: wrap;
-    }
-
-    .filter-item {
-      flex: 1;
-      min-width: 200px;
-    }
-
-    .loading {
-      text-align: center;
-      padding: 48px;
-      color: var(--text-secondary);
-      font-size: 16px;
-    }
-
-    .empty-state {
-      text-align: center;
-      padding: 64px 32px;
-      color: var(--text-secondary);
-    }
-
-    .empty-state-icon {
-      font-size: 64px;
-      margin-bottom: 16px;
-      opacity: 0.5;
-    }
-
-    .modal-overlay {
-      position: fixed;
-      top: 0;
-      left: 0;
-      right: 0;
-      bottom: 0;
-      background: rgba(0, 0, 0, 0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-      padding: 20px;
-    }
-
-    .modal {
-      background: var(--bg-card);
-      border-radius: 20px;
-      max-width: 800px;
-      width: 100%;
-      max-height: 90vh;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      box-shadow: 0 20px 60px rgba(0,0,0,0.3);
-    }
-
-    .modal-header {
-      padding: 24px;
-      border-bottom: 1px solid var(--border-color);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .modal-title {
-      font-size: 24px;
-      font-weight: 600;
-    }
-
-    .modal-close {
-      background: none;
-      border: none;
-      font-size: 32px;
-      color: var(--text-secondary);
-      cursor: pointer;
-      line-height: 1;
-      padding: 0;
-      width: 32px;
-      height: 32px;
-    }
-
-    .modal-body {
-      padding: 24px;
-      overflow-y: auto;
-      flex: 1;
-    }
-
-    .modal-footer {
-      padding: 24px;
-      border-top: 1px solid var(--border-color);
-      display: flex;
-      gap: 12px;
-      justify-content: flex-end;
-    }
-
-    .product-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
-      gap: 16px;
-      max-height: 400px;
-      overflow-y: auto;
-      padding: 8px;
-    }
-
-    .product-card {
-      border: 2px solid var(--border-color);
-      border-radius: 12px;
-      padding: 16px;
-      text-align: center;
-      cursor: pointer;
-      transition: all 0.3s ease;
-    }
-
-    .product-card:hover {
-      border-color: var(--merrily-green);
-      background: var(--merrily-green-light);
-      transform: translateY(-2px);
-    }
-
-    .product-card.selected {
-      border-color: var(--merrily-green);
-      background: var(--merrily-green-light);
-    }
-
-    .product-name {
-      font-weight: 600;
-      margin-bottom: 8px;
-      font-size: 15px;
-    }
-
-    .product-price {
-      color: var(--merrily-green-dark);
-      font-weight: 600;
-      font-size: 18px;
-      margin-bottom: 12px;
-    }
-
-    .quantity-control {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 8px;
-      margin-top: 12px;
-    }
-
-    .quantity-btn {
-      width: 32px;
-      height: 32px;
-      border: none;
-      border-radius: 50%;
-      background: var(--merrily-green);
-      color: white;
-      font-size: 18px;
-      font-weight: 600;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: all 0.2s ease;
-    }
-
-    .quantity-btn:hover {
-      background: var(--merrily-green-dark);
-      transform: scale(1.1);
-    }
-
-    .quantity-input {
-      width: 60px;
-      padding: 8px;
-      text-align: center;
-      border: 2px solid var(--border-color);
-      border-radius: 8px;
-      font-weight: 600;
-      font-size: 16px;
-    }
-
-    .summary-box {
-      background: var(--bg-secondary);
-      border-radius: 12px;
-      padding: 20px;
-      margin-top: 24px;
-    }
-
-    .summary-row {
-      display: flex;
-      justify-content: space-between;
-      padding: 12px 0;
-      font-size: 16px;
-    }
-
-    .summary-row.total {
-      border-top: 2px solid var(--border-color);
-      margin-top: 12px;
-      padding-top: 20px;
-      font-size: 20px;
-      font-weight: 700;
-    }
-
-    .tab-buttons {
-      display: flex;
-      gap: 8px;
-      margin-bottom: 24px;
-      border-bottom: 2px solid var(--border-color);
-    }
-
-    .tab-button {
-      padding: 12px 24px;
-      background: none;
-      border: none;
-      border-bottom: 3px solid transparent;
-      cursor: pointer;
-      font-weight: 600;
-      font-size: 15px;
-      color: var(--text-secondary);
-      transition: all 0.3s ease;
-      position: relative;
-      bottom: -2px;
-    }
-
-    .tab-button:hover {
-      color: var(--merrily-green);
-    }
-
-    .tab-button.active {
-      color: var(--merrily-green);
-      border-bottom-color: var(--merrily-green);
-    }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    .btn-primary { background: #2D8B5F; color: white; }
+    .btn-secondary { background: #ddd; color: #333; }
+    .error { background: #fee; color: #c00; padding: 12px; border-radius: 6px; margin: 10px 0; }
+    .success { background: #e8f5e9; color: #2e7d32; padding: 12px; border-radius: 6px; margin: 10px 0; }
+    .loading { text-align: center; padding: 40px; }
+    input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin: 8px 0; }
+    label { display: block; margin: 10px 0 5px; font-weight: 500; }
+    h1 { color: #2D8B5F; margin-bottom: 20px; }
+    h2 { margin-bottom: 15px; }
+    .debug { background: #f0f0f0; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
   </style>
 </head>
 <body>
   <div id="root"></div>
-
+  
   <script type="text/babel">
-    const { useState, useEffect, useRef } = React;
-
-    // API URL
+    const { useState } = React;
+    
+    // ★★★ あなたのAPIのURL ★★★
     const API_URL = 'https://script.google.com/macros/s/AKfycbzR4W8eaZd00mpqxZZ7qWSbDjO2eWUQCgpC8lc1YbIWkdFUXF1e9_uVJibr_MDZGcIGqw/exec';
-    // ============================================
-    // API通信関数
-    // ============================================
-
 
     async function apiCall(action, params = {}) {
       const sessionToken = localStorage.getItem('sessionToken');
+      const requestBody = { action, ...params };
+      if (sessionToken) requestBody.sessionToken = sessionToken;
       
-      const requestBody = {
-        action: action,
-        ...params
-      };
-      
-      if (sessionToken) {
-        requestBody.sessionToken = sessionToken;
-      }
-      
-      console.log('API Request:', {
-        url: API_URL,
-        action: action,
-        hasSession: !!sessionToken,
-        timestamp: new Date().toISOString()
-      });
+      console.log('📤 API Request:', action);
       
       try {
-        // APIのURLチェック（プレースホルダーの場合のみエラー）
-        if (!API_URL || API_URL === 'YOUR_DEPLOYED_WEB_APP_URL_HERE') {
-          throw new Error('API URLが設定されていません。HTMLファイル内のAPI_URLを正しいデプロイURLに変更してください。');
-        }
-
-        console.log('Sending request body:', JSON.stringify(requestBody));
-        
         const response = await fetch(API_URL, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(requestBody),
-          redirect: 'follow',
-          mode: 'cors' // CORS対応
+          mode: 'cors'
         });
         
-        console.log('Response received:', {
-          status: response.status,
-          statusText: response.statusText,
-          contentType: response.headers.get('content-type'),
-          ok: response.ok
-        });
+        console.log('📥 Response:', response.status, response.statusText);
         
         if (!response.ok) {
-          const errorText = await response.text();
-          console.error('Error response text:', errorText);
-          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
+          const text = await response.text();
+          throw new Error(`HTTP ${response.status}: ${text.substring(0, 100)}`);
         }
         
         const contentType = response.headers.get('content-type');
         let data;
         
-        if (contentType && contentType.includes('application/json')) {
+        if (contentType?.includes('application/json')) {
           data = await response.json();
-          console.log('Parsed JSON response:', data);
         } else {
           const text = await response.text();
-          console.log('Non-JSON response received:', text);
-          
-          // テキストレスポンスからHTMLタグを除去してJSONを抽出
-          let cleanedText = text.trim();
-          
-          // HTMLが含まれている場合の処理
-          if (cleanedText.includes('<!DOCTYPE') || cleanedText.includes('<html')) {
-            console.warn('Response contains HTML. This may indicate the script URL is incorrect.');
-            throw new Error('レスポンスにHTMLが含まれています。デプロイURLが正しいか確認してください。');
+          if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+            throw new Error('HTMLレスポンスを受信。URLが正しいか確認してください。');
           }
-          
-          try {
-            data = JSON.parse(cleanedText);
-            console.log('Successfully parsed text as JSON:', data);
-          } catch (e) {
-            console.error('JSON parse error:', e);
-            console.error('Failed to parse text:', cleanedText);
-            throw new Error('サーバーからのレスポンスが正しいJSON形式ではありません: ' + e.message);
-          }
+          data = JSON.parse(text);
         }
         
-        // レスポンスの検証
-        if (!data) {
-          throw new Error('サーバーから空のレスポンスが返されました');
-        }
-        
-        console.log('API call completed successfully:', {
-          action: action,
-          success: data.success,
-          hasData: !!data.data
-        });
-        
+        console.log('✅ Success:', data);
         return data;
       } catch (error) {
-        console.error('API Call Error:', {
-          action: action,
-          error: error.message,
-          stack: error.stack
-        });
+        console.error('❌ Error:', error);
         throw error;
       }
     }
 
-    function formatCurrency(amount) {
-      return new Intl.NumberFormat('ja-JP', {
-        style: 'currency',
-        currency: 'JPY'
-      }).format(amount);
-    }
-
-    function formatDate(dateString) {
-      if (!dateString) return '';
-      const date = new Date(dateString);
-      return date.toLocaleDateString('ja-JP');
-    }
-
-    // ============================================
-    // メインアプリケーション
-    // ============================================
-
     function App() {
-      const [user, setUser] = useState(null);
-      const [loading, setLoading] = useState(true);
-
-      useEffect(() => {
-        checkSession();
-      }, []);
-
-      const checkSession = async () => {
-        const sessionToken = localStorage.getItem('sessionToken');
-        
-        if (!sessionToken) {
-          setLoading(false);
-          return;
-        }
-
-        try {
-          const result = await apiCall('checkSession');
-          
-          if (result.success) {
-            setUser(result.data.user);
-          } else {
-            localStorage.removeItem('sessionToken');
-          }
-        } catch (error) {
-          console.error('Session check error:', error);
-          localStorage.removeItem('sessionToken');
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      const handleLogin = (userData) => {
-        setUser(userData);
-      };
-
-      const handleLogout = async () => {
-        try {
-          await apiCall('logout');
-        } catch (error) {
-          console.error('Logout error:', error);
-        }
-        
-        localStorage.removeItem('sessionToken');
-        setUser(null);
-      };
-
-      if (loading) {
-        return (
-          <div className="loading-container" style={{display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100vh'}}>
-            <div className="loading">読み込み中...</div>
-          </div>
-        );
-      }
-
-      if (!user) {
-        return <LoginPage onLogin={handleLogin} />;
-      }
-
-      return <Dashboard user={user} onLogout={handleLogout} />;
-    }
-
-    // ============================================
-    // ログインページ
-    // ============================================
-
-    function LoginPage({ onLogin }) {
+      const [status, setStatus] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [debugInfo, setDebugInfo] = useState('');
       const [email, setEmail] = useState('');
       const [password, setPassword] = useState('');
-      const [error, setError] = useState('');
-      const [loading, setLoading] = useState(false);
-      const [apiStatus, setApiStatus] = useState(null);
-      const [testingApi, setTestingApi] = useState(false);
-      const [debugInfo, setDebugInfo] = useState('');
 
-      const testApiConnection = async () => {
-        setTestingApi(true);
-        setApiStatus(null);
-        setError('');
+      const testConnection = async () => {
+        setLoading(true);
+        setStatus('');
         setDebugInfo('');
-
-        const debugLog = [];
-        debugLog.push('=== API接続テスト開始 ===');
-        debugLog.push(`テスト時刻: ${new Date().toLocaleString('ja-JP')}`);
-        debugLog.push(`API URL: ${API_URL}`);
-        debugLog.push('');
-
+        
         try {
-          debugLog.push('GET リクエスト送信中...');
-          const response = await fetch(API_URL, {
-            method: 'GET',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            redirect: 'follow'
-          });
-
-          debugLog.push(`レスポンスステータス: ${response.status} ${response.statusText}`);
-          debugLog.push(`Content-Type: ${response.headers.get('content-type')}`);
-          debugLog.push('');
-
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-          }
-
-          const contentType = response.headers.get('content-type');
-          let data;
-          
-          if (contentType && contentType.includes('application/json')) {
-            data = await response.json();
-          } else {
-            const text = await response.text();
-            debugLog.push('レスポンスがJSON形式ではありません。テキストとして受信:');
-            debugLog.push(text);
-            try {
-              data = JSON.parse(text);
-            } catch (e) {
-              throw new Error('JSONパースエラー: レスポンスが正しいJSON形式ではありません');
-            }
-          }
-          
-          debugLog.push('レスポンスデータ:');
-          debugLog.push(JSON.stringify(data, null, 2));
-
-          setApiStatus('success');
-          setDebugInfo(debugLog.join('\n'));
+          const result = await fetch(API_URL, { method: 'GET' });
+          const data = await result.json();
+          setStatus('success');
+          setDebugInfo(JSON.stringify(data, null, 2));
         } catch (error) {
-          debugLog.push('');
-          debugLog.push('❌ エラー発生:');
-          debugLog.push(`エラーメッセージ: ${error.message}`);
-          if (error.stack) {
-            debugLog.push(`エラースタック: ${error.stack}`);
-          }
-          
-          setApiStatus('error');
-          setError('API接続エラー: ' + error.message);
-          setDebugInfo(debugLog.join('\n'));
+          setStatus('error');
+          setDebugInfo(error.message);
         } finally {
-          setTestingApi(false);
+          setLoading(false);
         }
       };
 
-      const handleSubmit = async (e) => {
+      const handleLogin = async (e) => {
         e.preventDefault();
-        setError('');
         setLoading(true);
+        setStatus('');
         setDebugInfo('');
-
-        const debugLog = [];
-        debugLog.push('=== ログイン処理開始 ===');
-        debugLog.push(`ログイン試行時刻: ${new Date().toLocaleString('ja-JP')}`);
-        debugLog.push(`メールアドレス: ${email}`);
-        debugLog.push('');
-
+        
         try {
-          debugLog.push('ログインリクエスト送信中...');
-          const result = await apiCall('login', {
-            email: email,
-            password: password
-          });
-
-          debugLog.push('レスポンス受信:');
-          debugLog.push(JSON.stringify(result, null, 2));
-
+          const result = await apiCall('login', { email, password });
+          
           if (result.success) {
-            debugLog.push('');
-            debugLog.push('✅ ログイン成功');
+            setStatus('success');
+            setDebugInfo('ログイン成功！\n' + JSON.stringify(result.data, null, 2));
             localStorage.setItem('sessionToken', result.data.sessionToken);
-            onLogin(result.data.user);
           } else {
-            debugLog.push('');
-            debugLog.push('❌ ログイン失敗');
-            setError(result.message || 'ログインに失敗しました');
-            setDebugInfo(debugLog.join('\n'));
+            setStatus('error');
+            setDebugInfo(result.message);
           }
         } catch (error) {
-          debugLog.push('');
-          debugLog.push('❌ エラー発生:');
-          debugLog.push(`エラーメッセージ: ${error.message}`);
-          setError('ログインエラー: ' + error.message);
-          setDebugInfo(debugLog.join('\n'));
+          setStatus('error');
+          setDebugInfo(error.message);
         } finally {
           setLoading(false);
         }
       };
 
       return (
-        <div className="login-container">
-          <div className="login-card">
-            <div className="logo-container">
-              <div className="logo-text">MERRILY</div>
-              <div className="logo-subtitle">Cafe Management System</div>
-            </div>
-
-            {API_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE' && (
-              <div className="warning-message">
-                ⚠️ API URLが設定されていません。HTMLファイル内の「YOUR_APPS_SCRIPT_WEB_APP_URL_HERE」を実際のGoogle Apps ScriptのWeb AppのURLに置き換えてください。
+        <div className="container">
+          <h1>🍵 MERRILY カフェ管理システム</h1>
+          
+          <div className="card">
+            <h2>API接続テスト</h2>
+            <p style={{marginBottom: '10px'}}>まず、APIに接続できるか確認しましょう。</p>
+            <button 
+              className="btn btn-primary" 
+              onClick={testConnection}
+              disabled={loading}
+            >
+              {loading ? '接続中...' : 'API接続をテスト'}
+            </button>
+            
+            {status === 'success' && (
+              <div className="success" style={{marginTop: '10px'}}>
+                ✅ API接続成功！サーバーからレスポンスを受信しました。
               </div>
             )}
+            
+            {status === 'error' && (
+              <div className="error" style={{marginTop: '10px'}}>
+                ❌ 接続エラー: {debugInfo}
+              </div>
+            )}
+            
+            {debugInfo && status === 'success' && (
+              <div className="debug" style={{marginTop: '10px'}}>
+                {debugInfo}
+              </div>
+            )}
+          </div>
 
-            <div style={{marginBottom: '16px'}}>
+          <div className="card">
+            <h2>ログインテスト</h2>
+            <form onSubmit={handleLogin}>
+              <label>メールアドレス</label>
+              <input 
+                type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="test@example.com"
+                required
+              />
+              
+              <label>パスワード</label>
+              <input 
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="password"
+                required
+              />
+              
               <button 
-                type="button"
-                className="btn-secondary" 
-                style={{width: '100%'}}
-                onClick={testApiConnection}
-                disabled={testingApi || API_URL === 'YOUR_APPS_SCRIPT_WEB_APP_URL_HERE'}
+                type="submit"
+                className="btn btn-primary"
+                disabled={loading}
+                style={{marginTop: '10px'}}
               >
-                {testingApi ? 'テスト中...' : '🔌 API接続テスト'}
-              </button>
-            </div>
-
-            {apiStatus === 'success' && (
-              <div className="success-message">
-                ✅ API接続成功！サーバーと正常に通信できています。
-              </div>
-            )}
-
-            {error && <div className="error-message">{error}</div>}
-
-            {debugInfo && (
-              <div className="debug-info">
-                <strong>デバッグ情報:</strong>
-                <pre style={{marginTop: '8px', fontSize: '11px'}}>{debugInfo}</pre>
-              </div>
-            )}
-
-            <form onSubmit={handleSubmit}>
-              <div className="form-group">
-                <label className="form-label">メールアドレス</label>
-                <input
-                  type="email"
-                  className="form-input"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              <div className="form-group">
-                <label className="form-label">パスワード</label>
-                <input
-                  type="password"
-                  className="form-input"
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  required
-                  disabled={loading}
-                />
-              </div>
-
-              <button type="submit" className="btn btn-primary" style={{width: '100%'}} disabled={loading}>
                 {loading ? 'ログイン中...' : 'ログイン'}
               </button>
             </form>
           </div>
-        </div>
-      );
-    }
 
-    // ============================================
-    // ダッシュボード
-    // ============================================
-
-    function Dashboard({ user, onLogout }) {
-      const [currentPage, setCurrentPage] = useState('analytics');
-
-      return (
-        <div className="dashboard">
-          <Sidebar user={user} currentPage={currentPage} onNavigate={setCurrentPage} onLogout={onLogout} />
-          <main className="main-content">
-            {currentPage === 'analytics' && <AnalyticsPage />}
-            {currentPage === 'sales' && <SalesPage />}
-            {currentPage === 'products' && <ProductsPage />}
-          </main>
-        </div>
-      );
-    }
-
-    // ============================================
-    // サイドバー
-    // ============================================
-
-    function Sidebar({ user, currentPage, onNavigate, onLogout }) {
-      return (
-        <aside className="sidebar">
-          <div className="sidebar-header">
-            <div className="sidebar-logo">MERRILY</div>
-            <div className="user-info">
-              <div className="user-avatar">{user.name ? user.name[0] : 'U'}</div>
-              <div>
-                <div style={{fontWeight: 600, fontSize: '14px'}}>{user.name}</div>
-                <div style={{fontSize: '12px', color: 'var(--text-secondary)'}}>{user.department}</div>
-              </div>
-            </div>
-          </div>
-
-          <nav className="sidebar-nav">
-            <div className="nav-section">
-              <div className="nav-section-title">会計部メニュー</div>
-              <div 
-                className={`nav-item ${currentPage === 'analytics' ? 'active' : ''}`}
-                onClick={() => onNavigate('analytics')}
-              >
-                <span>📊</span>
-                <span>売上分析</span>
-              </div>
-              <div 
-                className={`nav-item ${currentPage === 'sales' ? 'active' : ''}`}
-                onClick={() => onNavigate('sales')}
-              >
-                <span>💰</span>
-                <span>売上管理</span>
-              </div>
-              <div 
-                className={`nav-item ${currentPage === 'products' ? 'active' : ''}`}
-                onClick={() => onNavigate('products')}
-              >
-                <span>☕</span>
-                <span>商品管理</span>
-              </div>
-            </div>
-          </nav>
-
-          <div className="sidebar-footer">
-            <button className="btn-secondary" style={{width: '100%'}} onClick={onLogout}>
-              ログアウト
-            </button>
-          </div>
-        </aside>
-      );
-    }
-
-    // ============================================
-    // 売上分析ページ
-    // ============================================
-
-    function AnalyticsPage() {
-      const [loading, setLoading] = useState(true);
-      const [error, setError] = useState('');
-      const [dateRange, setDateRange] = useState({
-        startDate: new Date(Date.now() - 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        endDate: new Date().toISOString().split('T')[0]
-      });
-      const [analytics, setAnalytics] = useState(null);
-      const [productAnalytics, setProductAnalytics] = useState([]);
-      const [dailySalesData, setDailySalesData] = useState([]);
-      const [activeTab, setActiveTab] = useState('overview');
-      
-      const salesChartRef = useRef(null);
-      const productChartRef = useRef(null);
-      const salesChartInstance = useRef(null);
-      const productChartInstance = useRef(null);
-
-      useEffect(() => {
-        loadAnalytics();
-      }, [dateRange]);
-
-      useEffect(() => {
-        if (activeTab === 'trends' && dailySalesData.length > 0) {
-          renderSalesChart();
-        }
-        if (activeTab === 'products' && productAnalytics.length > 0) {
-          renderProductChart();
-        }
-      }, [activeTab, dailySalesData, productAnalytics]);
-
-      const loadAnalytics = async () => {
-        try {
-          setLoading(true);
-          setError('');
-
-          const [analyticsResult, productResult, dailyResult] = await Promise.all([
-            apiCall('getSalesAnalytics', dateRange),
-            apiCall('getProductAnalytics', { ...dateRange, limit: 10 }),
-            apiCall('getDailySalesData', dateRange)
-          ]);
-
-          if (analyticsResult.success) {
-            setAnalytics(analyticsResult.data);
-          }
-
-          if (productResult.success) {
-            setProductAnalytics(productResult.data);
-          }
-
-          if (dailyResult.success) {
-            setDailySalesData(dailyResult.data);
-          }
-
-        } catch (err) {
-          setError('データの読み込みに失敗しました: ' + err.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      const renderSalesChart = () => {
-        if (!salesChartRef.current || dailySalesData.length === 0) return;
-
-        if (salesChartInstance.current) {
-          salesChartInstance.current.destroy();
-        }
-
-        const ctx = salesChartRef.current.getContext('2d');
-        
-        salesChartInstance.current = new Chart(ctx, {
-          type: 'line',
-          data: {
-            labels: dailySalesData.map(d => d.date),
-            datasets: [
-              {
-                label: '売上',
-                data: dailySalesData.map(d => d.sales),
-                borderColor: '#2D8B5F',
-                backgroundColor: 'rgba(45, 139, 95, 0.1)',
-                tension: 0.4,
-                fill: true
-              },
-              {
-                label: '粗利',
-                data: dailySalesData.map(d => d.profit),
-                borderColor: '#DAA520',
-                backgroundColor: 'rgba(218, 165, 32, 0.1)',
-                tension: 0.4,
-                fill: true
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                display: true,
-                position: 'top'
-              },
-              tooltip: {
-                mode: 'index',
-                intersect: false,
-                callbacks: {
-                  label: function(context) {
-                    return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
-                  }
-                }
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  callback: function(value) {
-                    return '¥' + value.toLocaleString();
-                  }
-                }
-              }
-            }
-          }
-        });
-      };
-
-      const renderProductChart = () => {
-        if (!productChartRef.current || productAnalytics.length === 0) return;
-
-        if (productChartInstance.current) {
-          productChartInstance.current.destroy();
-        }
-
-        const ctx = productChartRef.current.getContext('2d');
-        
-        productChartInstance.current = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: productAnalytics.map(p => p.productName),
-            datasets: [
-              {
-                label: '売上',
-                data: productAnalytics.map(p => p.totalSales),
-                backgroundColor: '#2D8B5F'
-              },
-              {
-                label: '粗利',
-                data: productAnalytics.map(p => p.totalProfit),
-                backgroundColor: '#DAA520'
-              }
-            ]
-          },
-          options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            plugins: {
-              legend: {
-                display: true,
-                position: 'top'
-              },
-              tooltip: {
-                callbacks: {
-                  label: function(context) {
-                    return context.dataset.label + ': ' + formatCurrency(context.parsed.y);
-                  }
-                }
-              }
-            },
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  callback: function(value) {
-                    return '¥' + value.toLocaleString();
-                  }
-                }
-              }
-            }
-          }
-        });
-      };
-
-      if (loading) {
-        return <div className="loading">読み込み中...</div>;
-      }
-
-      return (
-        <div>
-          <div className="page-header">
-            <h1 className="page-title">売上分析</h1>
-          </div>
-
-          {error && <div className="error-message">{error}</div>}
-
-          <div className="filter-group">
-            <div className="filter-item">
-              <label className="form-label">開始日</label>
-              <input
-                type="date"
-                className="form-input"
-                value={dateRange.startDate}
-                onChange={(e) => setDateRange({...dateRange, startDate: e.target.value})}
-              />
-            </div>
-            <div className="filter-item">
-              <label className="form-label">終了日</label>
-              <input
-                type="date"
-                className="form-input"
-                value={dateRange.endDate}
-                onChange={(e) => setDateRange({...dateRange, endDate: e.target.value})}
-              />
-            </div>
-          </div>
-
-          {analytics && (
-            <div className="stats-grid">
-              <div className="stat-card">
-                <div className="stat-label">総売上</div>
-                <div className="stat-value">{formatCurrency(analytics.totalSales)}</div>
-                <div className="stat-change positive">
-                  {analytics.transactionCount} 件の取引
-                </div>
-              </div>
-
-              <div className="stat-card">
-                <div className="stat-label">総粗利</div>
-                <div className="stat-value">{formatCurrency(analytics.totalProfit)}</div>
-                <div className="stat-change positive">
-                  粗利率 {analytics.profitMargin}%
-                </div>
-              </div>
-
-              <div className="stat-card">
-                <div className="stat-label">総原価</div>
-                <div className="stat-value">{formatCurrency(analytics.totalCost)}</div>
-                <div className="stat-change">
-                  原価率 {(100 - analytics.profitMargin).toFixed(1)}%
-                </div>
-              </div>
-
-              <div className="stat-card">
-                <div className="stat-label">平均客単価</div>
-                <div className="stat-value">{formatCurrency(analytics.averageTransactionValue)}</div>
-                <div className="stat-change">
-                  販売数量 {analytics.totalQuantity} 個
-                </div>
-              </div>
-            </div>
-          )}
-
-          <div className="tab-buttons">
-            <button 
-              className={`tab-button ${activeTab === 'overview' ? 'active' : ''}`}
-              onClick={() => setActiveTab('overview')}
-            >
-              概要
-            </button>
-            <button 
-              className={`tab-button ${activeTab === 'trends' ? 'active' : ''}`}
-              onClick={() => setActiveTab('trends')}
-            >
-              推移グラフ
-            </button>
-            <button 
-              className={`tab-button ${activeTab === 'products' ? 'active' : ''}`}
-              onClick={() => setActiveTab('products')}
-            >
-              商品別分析
-            </button>
-          </div>
-
-          {activeTab === 'overview' && productAnalytics.length > 0 && (
-            <div className="card">
-              <div className="card-header">
-                <h2 className="card-title">商品別売上ランキング</h2>
-              </div>
-              <div className="table-container">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>順位</th>
-                      <th>商品名</th>
-                      <th>売上</th>
-                      <th>粗利</th>
-                      <th>粗利率</th>
-                      <th>販売数</th>
-                      <th>取引数</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {productAnalytics.map((product, index) => (
-                      <tr key={index}>
-                        <td><strong>{index + 1}</strong></td>
-                        <td>{product.productName}</td>
-                        <td>{formatCurrency(product.totalSales)}</td>
-                        <td>{formatCurrency(product.totalProfit)}</td>
-                        <td>
-                          <span className={`badge ${product.profitMargin >= 50 ? 'badge-success' : product.profitMargin >= 30 ? 'badge-warning' : 'badge-danger'}`}>
-                            {product.profitMargin}%
-                          </span>
-                        </td>
-                        <td>{product.totalQuantity}</td>
-                        <td>{product.transactionCount}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'trends' && (
-            <div className="card">
-              <div className="card-header">
-                <h2 className="card-title">売上推移</h2>
-              </div>
-              <div className="chart-container">
-                <canvas ref={salesChartRef}></canvas>
-              </div>
-            </div>
-          )}
-
-          {activeTab === 'products' && (
-            <div className="card">
-              <div className="card-header">
-                <h2 className="card-title">商品別売上比較</h2>
-              </div>
-              <div className="chart-container">
-                <canvas ref={productChartRef}></canvas>
-              </div>
-            </div>
-          )}
-        </div>
-      );
-    }
-
-    // ============================================
-    // 売上管理ページ
-    // ============================================
-
-    function SalesPage() {
-      const [sales, setSales] = useState([]);
-      const [loading, setLoading] = useState(true);
-      const [showModal, setShowModal] = useState(false);
-      const [error, setError] = useState('');
-      const [success, setSuccess] = useState('');
-      const [dateRange, setDateRange] = useState({
-        startDate: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
-        endDate: new Date().toISOString().split('T')[0]
-      });
-
-      useEffect(() => {
-        loadSales();
-      }, [dateRange]);
-
-      const loadSales = async () => {
-        try {
-          setLoading(true);
-          const result = await apiCall('getSalesData', dateRange);
-
-          if (result.success) {
-            setSales(result.data || []);
-          } else {
-            setError(result.message);
-          }
-        } catch (err) {
-          setError('売上データの読み込みに失敗しました: ' + err.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      return (
-        <div>
-          <div className="page-header">
-            <h1 className="page-title">売上管理</h1>
-            <button className="btn-success" onClick={() => setShowModal(true)}>+ 売上を登録</button>
-          </div>
-
-          {error && <div className="error-message">{error}</div>}
-          {success && <div className="success-message">{success}</div>}
-
-          <div className="filter-group">
-            <div className="filter-item">
-              <label className="form-label">開始日</label>
-              <input
-                type="date"
-                className="form-input"
-                value={dateRange.startDate}
-                onChange={(e) => setDateRange({...dateRange, startDate: e.target.value})}
-              />
-            </div>
-            <div className="filter-item">
-              <label className="form-label">終了日</label>
-              <input
-                type="date"
-                className="form-input"
-                value={dateRange.endDate}
-                onChange={(e) => setDateRange({...dateRange, endDate: e.target.value})}
-              />
-            </div>
+          <div className="card">
+            <h2>📋 トラブルシューティング</h2>
+            <ul style={{paddingLeft: '20px', lineHeight: '1.8'}}>
+              <li>API接続テストが失敗する場合：
+                <ul style={{paddingLeft: '20px', marginTop: '5px'}}>
+                  <li>Google Apps Scriptの「アクセスできるユーザー」が「全員」になっているか確認</li>
+                  <li>URLが <code>/exec</code> で終わっているか確認</li>
+                  <li>ブラウザのコンソール（F12）でエラー詳細を確認</li>
+                </ul>
+              </li>
+              <li>ログインが失敗する場合：
+                <ul style={{paddingLeft: '20px', marginTop: '5px'}}>
+                  <li>スプレッドシートに「メンバー管理」シートがあるか確認</li>
+                  <li>メールアドレスとパスワードが正しく登録されているか確認</li>
+                </ul>
+              </li>
+            </ul>
           </div>
 
           <div className="card">
-            {loading ? (
-              <div className="loading">読み込み中...</div>
-            ) : sales.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">💰</div>
-                <div>売上データがありません</div>
-                <div style={{fontSize: '14px', marginTop: '8px'}}>「+ 売上を登録」ボタンから登録しましょう</div>
-              </div>
-            ) : (
-              <div className="table-container">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>日付</th>
-                      <th>商品名</th>
-                      <th>数量</th>
-                      <th>単価</th>
-                      <th>小計</th>
-                      <th>原価</th>
-                      <th>粗利</th>
-                      <th>登録者</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sales.map(sale => (
-                      <tr key={sale.id}>
-                        <td>{formatDate(sale.date)}</td>
-                        <td>{sale.productName}</td>
-                        <td>{sale.quantity}</td>
-                        <td>{formatCurrency(sale.unitPrice)}</td>
-                        <td>{formatCurrency(sale.subtotal)}</td>
-                        <td>{formatCurrency(sale.cost * sale.quantity)}</td>
-                        <td style={{color: sale.profit >= 0 ? 'var(--merrily-green-dark)' : 'var(--merrily-brown)'}}>
-                          {formatCurrency(sale.profit)}
-                        </td>
-                        <td>{sale.registeredBy}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {showModal && (
-            <SalesModal
-              onClose={() => setShowModal(false)}
-              onSave={() => {
-                setShowModal(false);
-                loadSales();
-                setSuccess('売上データを登録しました');
-                setTimeout(() => setSuccess(''), 3000);
-              }}
-              setError={setError}
-            />
-          )}
-        </div>
-      );
-    }
-
-    // 売上登録モーダル
-    function SalesModal({ onClose, onSave, setError }) {
-      const [products, setProducts] = useState([]);
-      const [selectedProducts, setSelectedProducts] = useState({});
-      const [saleDate, setSaleDate] = useState(new Date().toISOString().split('T')[0]);
-      const [saving, setSaving] = useState(false);
-      const [loading, setLoading] = useState(true);
-
-      useEffect(() => {
-        loadProducts();
-      }, []);
-
-      const loadProducts = async () => {
-        try {
-          const result = await apiCall('getProducts');
-          if (result.success) {
-            setProducts(result.data.filter(p => p.status === '販売中'));
-          }
-        } catch (err) {
-          setError('商品データの読み込みに失敗しました');
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      const handleQuantityChange = (productId, quantity) => {
-        setSelectedProducts(prev => ({
-          ...prev,
-          [productId]: Math.max(0, quantity)
-        }));
-      };
-
-      const totals = products.reduce((acc, product) => {
-        const qty = selectedProducts[product.id] || 0;
-        if (qty > 0) {
-          acc.subtotal += product.price * qty;
-          acc.totalCost += (product.cost || 0) * qty;
-          acc.profit += (product.price - (product.cost || 0)) * qty;
-        }
-        return acc;
-      }, { subtotal: 0, totalCost: 0, profit: 0 });
-
-      const handleSubmit = async (e) => {
-        e.preventDefault();
-        
-        const salesItems = products
-          .filter(product => selectedProducts[product.id] > 0)
-          .map(product => ({
-            date: saleDate,
-            productId: product.id,
-            productName: product.name,
-            quantity: selectedProducts[product.id],
-            unitPrice: product.price,
-            cost: product.cost || 0
-          }));
-
-        if (salesItems.length === 0) {
-          setError('商品を選択してください');
-          return;
-        }
-
-        setSaving(true);
-
-        try {
-          const result = await apiCall('addSalesData', { salesItems });
-
-          if (result.success) {
-            onSave();
-          } else {
-            setError(result.message);
-          }
-        } catch (err) {
-          setError('保存に失敗しました: ' + err.message);
-        } finally {
-          setSaving(false);
-        }
-      };
-
-      return (
-        <div className="modal-overlay" onClick={onClose}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">売上登録</h2>
-              <button className="modal-close" onClick={onClose}>×</button>
+            <h2>🔍 現在の設定</h2>
+            <div className="debug">
+API URL: {API_URL}
+ファイルサイズ: 軽量版（約15KB）
+Reactバージョン: 18
             </div>
-
-            <form onSubmit={handleSubmit}>
-              <div className="modal-body">
-                <div className="form-group">
-                  <label className="form-label">販売日 *</label>
-                  <input
-                    type="date"
-                    className="form-input"
-                    value={saleDate}
-                    onChange={(e) => setSaleDate(e.target.value)}
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">商品選択 *</label>
-                  {loading ? (
-                    <div className="loading">読み込み中...</div>
-                  ) : (
-                    <div className="product-grid">
-                      {products.map(product => (
-                        <div 
-                          key={product.id}
-                          className={`product-card ${(selectedProducts[product.id] || 0) > 0 ? 'selected' : ''}`}
-                        >
-                          <div className="product-name">{product.name}</div>
-                          <div className="product-price">{formatCurrency(product.price)}</div>
-                          <div className="quantity-control">
-                            <button
-                              type="button"
-                              className="quantity-btn"
-                              onClick={() => handleQuantityChange(product.id, (selectedProducts[product.id] || 0) - 1)}
-                            >
-                              -
-                            </button>
-                            <input
-                              type="number"
-                              className="quantity-input"
-                              value={selectedProducts[product.id] || 0}
-                              onChange={(e) => handleQuantityChange(product.id, parseInt(e.target.value) || 0)}
-                              min="0"
-                            />
-                            <button
-                              type="button"
-                              className="quantity-btn"
-                              onClick={() => handleQuantityChange(product.id, (selectedProducts[product.id] || 0) + 1)}
-                            >
-                              +
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-
-                <div className="summary-box">
-                  <div className="summary-row">
-                    <span>小計:</span>
-                    <strong>{formatCurrency(totals.subtotal)}</strong>
-                  </div>
-                  <div className="summary-row">
-                    <span>原価合計:</span>
-                    <span>{formatCurrency(totals.totalCost)}</span>
-                  </div>
-                  <div className="summary-row total">
-                    <span>粗利:</span>
-                    <strong style={{color: totals.profit >= 0 ? 'var(--merrily-green-dark)' : 'var(--merrily-brown)'}}>
-                      {formatCurrency(totals.profit)}
-                    </strong>
-                  </div>
-                </div>
-              </div>
-
-              <div className="modal-footer">
-                <button type="button" className="btn-secondary" onClick={onClose}>
-                  キャンセル
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={saving}>
-                  {saving ? '保存中...' : '保存'}
-                </button>
-              </div>
-            </form>
           </div>
         </div>
       );
     }
 
-    // 商品管理ページ（簡易版）
-    function ProductsPage() {
-      const [products, setProducts] = useState([]);
-      const [loading, setLoading] = useState(true);
-      const [showModal, setShowModal] = useState(false);
-      const [error, setError] = useState('');
-      const [success, setSuccess] = useState('');
-
-      useEffect(() => {
-        loadProducts();
-      }, []);
-
-      const loadProducts = async () => {
-        try {
-          setLoading(true);
-          const result = await apiCall('getProducts');
-
-          if (result.success) {
-            setProducts(result.data || []);
-          } else {
-            setError(result.message);
-          }
-        } catch (err) {
-          setError('商品データの読み込みに失敗しました: ' + err.message);
-        } finally {
-          setLoading(false);
-        }
-      };
-
-      return (
-        <div>
-          <div className="page-header">
-            <h1 className="page-title">商品管理</h1>
-            <button className="btn-success" onClick={() => setShowModal(true)}>+ 商品を追加</button>
-          </div>
-
-          {error && <div className="error-message">{error}</div>}
-          {success && <div className="success-message">{success}</div>}
-
-          <div className="card">
-            {loading ? (
-              <div className="loading">読み込み中...</div>
-            ) : products.length === 0 ? (
-              <div className="empty-state">
-                <div className="empty-state-icon">☕</div>
-                <div>商品が登録されていません</div>
-                <div style={{fontSize: '14px', marginTop: '8px'}}>「+ 商品を追加」ボタンから登録しましょう</div>
-              </div>
-            ) : (
-              <div className="table-container">
-                <table className="table">
-                  <thead>
-                    <tr>
-                      <th>商品名</th>
-                      <th>カテゴリ</th>
-                      <th>価格</th>
-                      <th>原価</th>
-                      <th>原価率</th>
-                      <th>状態</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {products.map(product => (
-                      <tr key={product.id}>
-                        <td>{product.name}</td>
-                        <td>{product.category}</td>
-                        <td>{formatCurrency(product.price)}</td>
-                        <td>{formatCurrency(product.cost)}</td>
-                        <td>{product.costRate}%</td>
-                        <td><span className="badge badge-success">{product.status}</span></td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </div>
-
-          {showModal && (
-            <ProductModal
-              onClose={() => setShowModal(false)}
-              onSave={() => {
-                setShowModal(false);
-                loadProducts();
-                setSuccess('商品を追加しました');
-                setTimeout(() => setSuccess(''), 3000);
-              }}
-              setError={setError}
-            />
-          )}
-        </div>
-      );
-    }
-
-    // 商品追加モーダル
-    function ProductModal({ onClose, onSave, setError }) {
-      const [formData, setFormData] = useState({
-        name: '',
-        category: 'ドリンク',
-        price: 0,
-        cost: 0,
-        status: '販売中'
-      });
-      const [saving, setSaving] = useState(false);
-
-      const handleSubmit = async (e) => {
-        e.preventDefault();
-        setSaving(true);
-
-        try {
-          const result = await apiCall('addProduct', { product: formData });
-
-          if (result.success) {
-            onSave();
-          } else {
-            setError(result.message);
-          }
-        } catch (err) {
-          setError('保存に失敗しました: ' + err.message);
-        } finally {
-          setSaving(false);
-        }
-      };
-
-      return (
-        <div className="modal-overlay" onClick={onClose}>
-          <div className="modal" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h2 className="modal-title">商品を追加</h2>
-              <button className="modal-close" onClick={onClose}>×</button>
-            </div>
-
-            <form onSubmit={handleSubmit}>
-              <div className="modal-body">
-                <div className="form-group">
-                  <label className="form-label">商品名 *</label>
-                  <input
-                    type="text"
-                    className="form-input"
-                    value={formData.name}
-                    onChange={(e) => setFormData({...formData, name: e.target.value})}
-                    required
-                  />
-                </div>
-
-                <div className="form-row">
-                  <div className="form-group">
-                    <label className="form-label">カテゴリ *</label>
-                    <select
-                      className="form-select"
-                      value={formData.category}
-                      onChange={(e) => setFormData({...formData, category: e.target.value})}
-                    >
-                      <option>ドリンク</option>
-                      <option>フード</option>
-                      <option>デザート</option>
-                      <option>その他</option>
-                    </select>
-                  </div>
-
-                  <div className="form-group">
-                    <label className="form-label">販売価格 *</label>
-                    <input
-                      type="number"
-                      className="form-input"
-                      value={formData.price}
-                      onChange={(e) => setFormData({...formData, price: Number(e.target.value)})}
-                      required
-                      min="0"
-                    />
-                  </div>
-                </div>
-
-                <div className="form-group">
-                  <label className="form-label">原価</label>
-                  <input
-                    type="number"
-                    className="form-input"
-                    value={formData.cost}
-                    onChange={(e) => setFormData({...formData, cost: Number(e.target.value)})}
-                    min="0"
-                  />
-                </div>
-              </div>
-
-              <div className="modal-footer">
-                <button type="button" className="btn-secondary" onClick={onClose}>
-                  キャンセル
-                </button>
-                <button type="submit" className="btn btn-primary" disabled={saving}>
-                  {saving ? '保存中...' : '保存'}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      );
-    }
-
-    const root = ReactDOM.createRoot(document.getElementById('root'));
-    root.render(<App />);
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
   </script>
 </body>
 </html>
