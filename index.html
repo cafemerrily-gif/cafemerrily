@@ -648,46 +648,104 @@
     // API通信関数
     // ============================================
 
+
     async function apiCall(action, params = {}) {
+      const sessionToken = localStorage.getItem('sessionToken');
+      
+      const requestBody = {
+        action: action,
+        ...params
+      };
+      
+      if (sessionToken) {
+        requestBody.sessionToken = sessionToken;
+      }
+      
+      console.log('API Request:', {
+        url: API_URL,
+        action: action,
+        hasSession: !!sessionToken,
+        timestamp: new Date().toISOString()
+      });
+      
       try {
-        const sessionToken = localStorage.getItem('sessionToken');
+        // APIのURLチェック（プレースホルダーの場合のみエラー）
+        if (!API_URL || API_URL === 'YOUR_DEPLOYED_WEB_APP_URL_HERE') {
+          throw new Error('API URLが設定されていません。HTMLファイル内のAPI_URLを正しいデプロイURLに変更してください。');
+        }
+
+        console.log('Sending request body:', JSON.stringify(requestBody));
         
         const response = await fetch(API_URL, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({
-            action: action,
-            sessionToken: sessionToken,
-            ...params
-          }),
-          redirect: 'follow'
+          body: JSON.stringify(requestBody),
+          redirect: 'follow',
+          mode: 'cors' // CORS対応
         });
-
+        
+        console.log('Response received:', {
+          status: response.status,
+          statusText: response.statusText,
+          contentType: response.headers.get('content-type'),
+          ok: response.ok
+        });
+        
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          const errorText = await response.text();
+          console.error('Error response text:', errorText);
+          throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
         }
-
+        
         const contentType = response.headers.get('content-type');
         let data;
         
         if (contentType && contentType.includes('application/json')) {
           data = await response.json();
+          console.log('Parsed JSON response:', data);
         } else {
           const text = await response.text();
-          console.log('Response text:', text);
+          console.log('Non-JSON response received:', text);
+          
+          // テキストレスポンスからHTMLタグを除去してJSONを抽出
+          let cleanedText = text.trim();
+          
+          // HTMLが含まれている場合の処理
+          if (cleanedText.includes('<!DOCTYPE') || cleanedText.includes('<html')) {
+            console.warn('Response contains HTML. This may indicate the script URL is incorrect.');
+            throw new Error('レスポンスにHTMLが含まれています。デプロイURLが正しいか確認してください。');
+          }
+          
           try {
-            data = JSON.parse(text);
+            data = JSON.parse(cleanedText);
+            console.log('Successfully parsed text as JSON:', data);
           } catch (e) {
             console.error('JSON parse error:', e);
-            throw new Error('サーバーからのレスポンスが正しいJSON形式ではありません');
+            console.error('Failed to parse text:', cleanedText);
+            throw new Error('サーバーからのレスポンスが正しいJSON形式ではありません: ' + e.message);
           }
         }
         
+        // レスポンスの検証
+        if (!data) {
+          throw new Error('サーバーから空のレスポンスが返されました');
+        }
+        
+        console.log('API call completed successfully:', {
+          action: action,
+          success: data.success,
+          hasData: !!data.data
+        });
+        
         return data;
       } catch (error) {
-        console.error('API Call Error:', error);
+        console.error('API Call Error:', {
+          action: action,
+          error: error.message,
+          stack: error.stack
+        });
         throw error;
       }
     }
