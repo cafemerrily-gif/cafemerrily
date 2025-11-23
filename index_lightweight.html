@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MERRILY カフェ管理システム</title>
+  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; }
+    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
+    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
+    .btn-primary { background: #2D8B5F; color: white; }
+    .btn-secondary { background: #ddd; color: #333; }
+    .error { background: #fee; color: #c00; padding: 12px; border-radius: 6px; margin: 10px 0; }
+    .success { background: #e8f5e9; color: #2e7d32; padding: 12px; border-radius: 6px; margin: 10px 0; }
+    .loading { text-align: center; padding: 40px; }
+    input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin: 8px 0; }
+    label { display: block; margin: 10px 0 5px; font-weight: 500; }
+    h1 { color: #2D8B5F; margin-bottom: 20px; }
+    h2 { margin-bottom: 15px; }
+    .debug { background: #f0f0f0; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState } = React;
+    
+    // ★★★ あなたのAPIのURL ★★★
+    const API_URL = 'https://script.google.com/macros/s/AKfycbzR4W8eaZd00mpqxZZ7qWSbDjO2eWUQCgpC8lc1YbIWkdFUXF1e9_uVJibr_MDZGcIGqw/exec';
+
+    async function apiCall(action, params = {}) {
+      const sessionToken = localStorage.getItem('sessionToken');
+      const requestBody = { action, ...params };
+      if (sessionToken) requestBody.sessionToken = sessionToken;
+      
+      console.log('📤 API Request:', action);
+      
+      try {
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(requestBody),
+          mode: 'cors'
+        });
+        
+        console.log('📥 Response:', response.status, response.statusText);
+        
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(`HTTP ${response.status}: ${text.substring(0, 100)}`);
+        }
+        
+        const contentType = response.headers.get('content-type');
+        let data;
+        
+        if (contentType?.includes('application/json')) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          if (text.includes('<!DOCTYPE') || text.includes('<html')) {
+            throw new Error('HTMLレスポンスを受信。URLが正しいか確認してください。');
+          }
+          data = JSON.parse(text);
+        }
+        
+        console.log('✅ Success:', data);
+        return data;
+      } catch (error) {
+        console.error('❌ Error:', error);
+        throw error;
+      }
+    }
+
+    function App() {
+      const [status, setStatus] = useState('');
+      const [loading, setLoading] = useState(false);
+      const [debugInfo, setDebugInfo] = useState('');
+      const [email, setEmail] = useState('');
+      const [password, setPassword] = useState('');
+
+      const testConnection = async () => {
+        setLoading(true);
+        setStatus('');
+        setDebugInfo('');
+        
+        try {
+          const result = await fetch(API_URL, { method: 'GET' });
+          const data = await result.json();
+          setStatus('success');
+          setDebugInfo(JSON.stringify(data, null, 2));
+        } catch (error) {
+          setStatus('error');
+          setDebugInfo(error.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      const handleLogin = async (e) => {
+        e.preventDefault();
+        setLoading(true);
+        setStatus('');
+        setDebugInfo('');
+        
+        try {
+          const result = await apiCall('login', { email, password });
+          
+          if (result.success) {
+            setStatus('success');
+            setDebugInfo('ログイン成功！\n' + JSON.stringify(result.data, null, 2));
+            localStorage.setItem('sessionToken', result.data.sessionToken);
+          } else {
+            setStatus('error');
+            setDebugInfo(result.message);
+          }
+        } catch (error) {
+          setStatus('error');
+          setDebugInfo(error.message);
+        } finally {
+          setLoading(false);
+        }
+      };
+
+      return (
+        <div className="container">
+          <h1>🍵 MERRILY カフェ管理システム</h1>
+          
+          <div className="card">
+            <h2>API接続テスト</h2>
+            <p style={{marginBottom: '10px'}}>まず、APIに接続できるか確認しましょう。</p>
+            <button 
+              className="btn btn-primary" 
+              onClick={testConnection}
+              disabled={loading}
+            >
+              {loading ? '接続中...' : 'API接続をテスト'}
+            </button>
+            
+            {status === 'success' && (
+              <div className="success" style={{marginTop: '10px'}}>
+                ✅ API接続成功！サーバーからレスポンスを受信しました。
+              </div>
+            )}
+            
+            {status === 'error' && (
+              <div className="error" style={{marginTop: '10px'}}>
+                ❌ 接続エラー: {debugInfo}
+              </div>
+            )}
+            
+            {debugInfo && status === 'success' && (
+              <div className="debug" style={{marginTop: '10px'}}>
+                {debugInfo}
+              </div>
+            )}
+          </div>
+
+          <div className="card">
+            <h2>ログインテスト</h2>
+            <form onSubmit={handleLogin}>
+              <label>メールアドレス</label>
+              <input 
+                type="email" 
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="test@example.com"
+                required
+              />
+              
+              <label>パスワード</label>
+              <input 
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="password"
+                required
+              />
+              
+              <button 
+                type="submit"
+                className="btn btn-primary"
+                disabled={loading}
+                style={{marginTop: '10px'}}
+              >
+                {loading ? 'ログイン中...' : 'ログイン'}
+              </button>
+            </form>
+          </div>
+
+          <div className="card">
+            <h2>📋 トラブルシューティング</h2>
+            <ul style={{paddingLeft: '20px', lineHeight: '1.8'}}>
+              <li>API接続テストが失敗する場合：
+                <ul style={{paddingLeft: '20px', marginTop: '5px'}}>
+                  <li>Google Apps Scriptの「アクセスできるユーザー」が「全員」になっているか確認</li>
+                  <li>URLが <code>/exec</code> で終わっているか確認</li>
+                  <li>ブラウザのコンソール（F12）でエラー詳細を確認</li>
+                </ul>
+              </li>
+              <li>ログインが失敗する場合：
+                <ul style={{paddingLeft: '20px', marginTop: '5px'}}>
+                  <li>スプレッドシートに「メンバー管理」シートがあるか確認</li>
+                  <li>メールアドレスとパスワードが正しく登録されているか確認</li>
+                </ul>
+              </li>
+            </ul>
+          </div>
+
+          <div className="card">
+            <h2>🔍 現在の設定</h2>
+            <div className="debug">
+API URL: {API_URL}
+ファイルサイズ: 軽量版（約15KB）
+Reactバージョン: 18
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+  </script>
+</body>
+</html>
