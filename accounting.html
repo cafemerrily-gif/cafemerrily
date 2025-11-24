@@ -1,0 +1,720 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>売上記録 - MERRILY 管理システム</title>
+  <style>
+    /* ===== 基本設定 ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: #F5F5F5;
+      color: #3E2723;
+    }
+    
+    :root {
+      --primary-brown: #8B4513;
+      --primary-green: #2E7D32;
+      --accent-orange: #FF9800;
+      --success: #4CAF50;
+      --error: #F44336;
+      --warning: #FFC107;
+    }
+    
+    /* ===== ヘッダー ===== */
+    .header {
+      background: white;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      padding: 16px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    .header-left {
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo {
+      width: 120px;
+      height: auto;
+      margin-right: 20px;
+    }
+    
+    .header-title h1 {
+      font-size: 20px;
+      color: var(--primary-brown);
+      font-weight: 700;
+    }
+    
+    .header-title p {
+      font-size: 13px;
+      color: #666;
+      margin-top: 2px;
+    }
+    
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .user-info {
+      font-size: 14px;
+      color: #666;
+    }
+    
+    .user-info strong {
+      color: var(--primary-brown);
+    }
+    
+    .btn-logout {
+      padding: 8px 16px;
+      background: #E0E0E0;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 14px;
+      transition: background 0.3s;
+    }
+    
+    .btn-logout:hover {
+      background: #BDBDBD;
+    }
+    
+    /* ===== メインコンテンツ ===== */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 24px;
+    }
+    
+    .page-header {
+      margin-bottom: 32px;
+    }
+    
+    .page-header h2 {
+      font-size: 28px;
+      color: var(--primary-brown);
+      margin-bottom: 8px;
+    }
+    
+    .page-header p {
+      font-size: 14px;
+      color: #666;
+    }
+    
+    /* ===== 日付選択 ===== */
+    .date-selector {
+      background: white;
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      margin-bottom: 24px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .date-selector label {
+      font-size: 14px;
+      font-weight: 600;
+      color: var(--primary-brown);
+    }
+    
+    .date-selector input[type="date"] {
+      padding: 10px 16px;
+      border: 2px solid #E0E0E0;
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    
+    .date-selector input[type="date"]:focus {
+      outline: none;
+      border-color: var(--primary-brown);
+    }
+    
+    /* ===== 売上入力エリア ===== */
+    .sales-input-card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+    }
+    
+    .card-header {
+      background: var(--primary-brown);
+      color: white;
+      padding: 16px 20px;
+      font-weight: 600;
+    }
+    
+    .card-body {
+      padding: 24px;
+    }
+    
+    /* ===== テーブル ===== */
+    .sales-table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 24px;
+    }
+    
+    .sales-table thead {
+      background: #F5F5F5;
+    }
+    
+    .sales-table th {
+      padding: 12px;
+      text-align: left;
+      font-size: 13px;
+      font-weight: 600;
+      color: #666;
+      border-bottom: 2px solid #E0E0E0;
+    }
+    
+    .sales-table td {
+      padding: 12px;
+      border-bottom: 1px solid #F0F0F0;
+    }
+    
+    .sales-table tbody tr:hover {
+      background: #FAFAFA;
+    }
+    
+    .sales-table select,
+    .sales-table input {
+      width: 100%;
+      padding: 8px 12px;
+      border: 1px solid #E0E0E0;
+      border-radius: 6px;
+      font-size: 14px;
+      font-family: inherit;
+    }
+    
+    .sales-table select:focus,
+    .sales-table input:focus {
+      outline: none;
+      border-color: var(--primary-brown);
+    }
+    
+    .sales-table input[type="number"] {
+      text-align: right;
+    }
+    
+    .amount-cell {
+      font-weight: 600;
+      color: var(--primary-brown);
+      text-align: right;
+    }
+    
+    .btn-remove {
+      background: #F44336;
+      color: white;
+      border: none;
+      padding: 6px 12px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      transition: background 0.3s;
+    }
+    
+    .btn-remove:hover {
+      background: #D32F2F;
+    }
+    
+    /* ===== アクションボタン ===== */
+    .action-buttons {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 2px solid #F0F0F0;
+    }
+    
+    .btn-add-row {
+      padding: 10px 20px;
+      background: var(--primary-green);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+      transition: background 0.3s;
+    }
+    
+    .btn-add-row:hover {
+      background: #1B5E20;
+    }
+    
+    .total-section {
+      text-align: right;
+    }
+    
+    .total-label {
+      font-size: 14px;
+      color: #666;
+      margin-bottom: 8px;
+    }
+    
+    .total-amount {
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--primary-brown);
+      margin-bottom: 16px;
+    }
+    
+    .btn-submit {
+      padding: 14px 40px;
+      background: var(--accent-orange);
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 16px;
+      font-weight: 600;
+      transition: all 0.3s;
+    }
+    
+    .btn-submit:hover {
+      background: #F57C00;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(255, 152, 0, 0.3);
+    }
+    
+    .btn-submit:disabled {
+      background: #CCC;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    /* ===== 通知メッセージ ===== */
+    .notification {
+      position: fixed;
+      top: 80px;
+      right: 24px;
+      padding: 16px 24px;
+      border-radius: 8px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      z-index: 1000;
+      display: none;
+      animation: slideInRight 0.3s ease-out;
+    }
+    
+    .notification.show {
+      display: block;
+    }
+    
+    .notification.success {
+      background: #4CAF50;
+      color: white;
+    }
+    
+    .notification.error {
+      background: #F44336;
+      color: white;
+    }
+    
+    @keyframes slideInRight {
+      from {
+        transform: translateX(400px);
+        opacity: 0;
+      }
+      to {
+        transform: translateX(0);
+        opacity: 1;
+      }
+    }
+    
+    /* ===== ローディング ===== */
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.5);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+    }
+    
+    .loading-overlay.show {
+      display: flex;
+    }
+    
+    .loading-spinner {
+      width: 60px;
+      height: 60px;
+      border: 6px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* ===== レスポンシブ ===== */
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 12px;
+      }
+      
+      .sales-table {
+        font-size: 12px;
+      }
+      
+      .sales-table th,
+      .sales-table td {
+        padding: 8px;
+      }
+      
+      .total-amount {
+        font-size: 24px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- ヘッダー -->
+  <header class="header">
+    <div class="header-left">
+      <img src="https://via.placeholder.com/120x48/8B4513/FFFFFF?text=MERRILY" alt="MERRILY" class="logo">
+      <div class="header-title">
+        <h1>カフェ総合管理システム</h1>
+        <p>会計部 - 売上記録</p>
+      </div>
+    </div>
+    <div class="header-right">
+      <div class="user-info">
+        <strong id="user-name">読み込み中...</strong>さん
+      </div>
+      <button class="btn-logout" onclick="logout()">ログアウト</button>
+    </div>
+  </header>
+  
+  <!-- メインコンテンツ -->
+  <div class="container">
+    <!-- ページヘッダー -->
+    <div class="page-header">
+      <h2>📊 売上記録</h2>
+      <p>本日の売上を記録してください。商品を選択し、数量を入力して一括送信します。</p>
+    </div>
+    
+    <!-- 日付選択 -->
+    <div class="date-selector">
+      <label for="sales-date">📅 売上日付:</label>
+      <input type="date" id="sales-date" required>
+    </div>
+    
+    <!-- 売上入力カード -->
+    <div class="sales-input-card">
+      <div class="card-header">
+        売上データ入力
+      </div>
+      <div class="card-body">
+        <table class="sales-table" id="sales-table">
+          <thead>
+            <tr>
+              <th style="width: 40%">商品</th>
+              <th style="width: 15%">数量</th>
+              <th style="width: 15%">単価</th>
+              <th style="width: 20%">金額</th>
+              <th style="width: 10%">操作</th>
+            </tr>
+          </thead>
+          <tbody id="sales-tbody">
+            <!-- 動的に行が追加されます -->
+          </tbody>
+        </table>
+        
+        <div class="action-buttons">
+          <button class="btn-add-row" onclick="addSalesRow()">
+            ➕ 行を追加
+          </button>
+          
+          <div class="total-section">
+            <div class="total-label">合計金額</div>
+            <div class="total-amount" id="total-amount">¥0</div>
+            <button class="btn-submit" onclick="submitSales()" id="submit-btn">
+              💾 一括送信
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- 通知 -->
+  <div class="notification" id="notification"></div>
+  
+  <!-- ローディング -->
+  <div class="loading-overlay" id="loading-overlay">
+    <div class="loading-spinner"></div>
+  </div>
+  
+  <script>
+    // ===== 設定 =====
+    const API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwkgdkDhmkO1nMMRUWPRml8jDST-XdFQOc9498mjYpkw706NxFPaFGYy3VWepH0S8cB3Q/exec'; // ⚠️ 要設定
+    
+    // ===== グローバル変数 =====
+    let products = [];
+    let salesRows = [];
+    
+    // ===== 初期化 =====
+    window.addEventListener('DOMContentLoaded', async () => {
+      // ログインチェック
+      if (!sessionStorage.getItem('userId')) {
+        window.location.href = 'index.html';
+        return;
+      }
+      
+      // ユーザー名表示
+      document.getElementById('user-name').textContent = sessionStorage.getItem('userName');
+      
+      // 今日の日付を設定
+      const today = new Date().toISOString().split('T')[0];
+      document.getElementById('sales-date').value = today;
+      
+      // 商品データ取得
+      await loadProducts();
+      
+      // 初期行を追加
+      addSalesRow();
+    });
+    
+    // ===== 商品データ取得 =====
+    async function loadProducts() {
+      showLoading(true);
+      
+      try {
+        const response = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ action: 'getProducts' })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          products = result.data.products;
+        } else {
+          showNotification('error', '商品データの取得に失敗しました');
+        }
+      } catch (error) {
+        showNotification('error', 'API接続エラー: ' + error.message);
+      } finally {
+        showLoading(false);
+      }
+    }
+    
+    // ===== 売上行追加 =====
+    function addSalesRow() {
+      const tbody = document.getElementById('sales-tbody');
+      const rowId = Date.now();
+      
+      const tr = document.createElement('tr');
+      tr.id = `row-${rowId}`;
+      
+      // 商品選択
+      let productOptions = '<option value="">-- 商品を選択 --</option>';
+      products.forEach(product => {
+        productOptions += `<option value="${product.code}" data-price="${product.price}">${product.name} (¥${product.price.toLocaleString()})</option>`;
+      });
+      
+      tr.innerHTML = `
+        <td>
+          <select class="product-select" onchange="updateRow(${rowId})">
+            ${productOptions}
+          </select>
+        </td>
+        <td>
+          <input type="number" class="quantity-input" min="1" value="1" onchange="updateRow(${rowId})">
+        </td>
+        <td>
+          <input type="number" class="price-input" readonly>
+        </td>
+        <td class="amount-cell">
+          <span class="row-amount">¥0</span>
+        </td>
+        <td>
+          <button class="btn-remove" onclick="removeSalesRow(${rowId})">削除</button>
+        </td>
+      `;
+      
+      tbody.appendChild(tr);
+      salesRows.push(rowId);
+    }
+    
+    // ===== 行の更新 =====
+    function updateRow(rowId) {
+      const row = document.getElementById(`row-${rowId}`);
+      const productSelect = row.querySelector('.product-select');
+      const quantityInput = row.querySelector('.quantity-input');
+      const priceInput = row.querySelector('.price-input');
+      const amountSpan = row.querySelector('.row-amount');
+      
+      // 選択された商品の価格を取得
+      const selectedOption = productSelect.options[productSelect.selectedIndex];
+      const price = selectedOption.dataset.price ? parseInt(selectedOption.dataset.price) : 0;
+      const quantity = parseInt(quantityInput.value) || 0;
+      
+      // 単価表示
+      priceInput.value = price;
+      
+      // 金額計算
+      const amount = price * quantity;
+      amountSpan.textContent = `¥${amount.toLocaleString()}`;
+      
+      // 合計金額更新
+      updateTotalAmount();
+    }
+    
+    // ===== 行の削除 =====
+    function removeSalesRow(rowId) {
+      const row = document.getElementById(`row-${rowId}`);
+      row.remove();
+      
+      salesRows = salesRows.filter(id => id !== rowId);
+      updateTotalAmount();
+      
+      // 最低1行は残す
+      if (salesRows.length === 0) {
+        addSalesRow();
+      }
+    }
+    
+    // ===== 合計金額更新 =====
+    function updateTotalAmount() {
+      let total = 0;
+      
+      document.querySelectorAll('.row-amount').forEach(span => {
+        const amount = parseInt(span.textContent.replace(/[¥,]/g, '')) || 0;
+        total += amount;
+      });
+      
+      document.getElementById('total-amount').textContent = `¥${total.toLocaleString()}`;
+    }
+    
+    // ===== 売上送信 =====
+    async function submitSales() {
+      const salesDate = document.getElementById('sales-date').value;
+      
+      if (!salesDate) {
+        showNotification('error', '日付を選択してください');
+        return;
+      }
+      
+      // データ収集
+      const salesData = [];
+      const rows = document.querySelectorAll('#sales-tbody tr');
+      
+      rows.forEach(row => {
+        const productSelect = row.querySelector('.product-select');
+        const quantityInput = row.querySelector('.quantity-input');
+        const priceInput = row.querySelector('.price-input');
+        
+        if (productSelect.value && quantityInput.value) {
+          const quantity = parseInt(quantityInput.value);
+          const price = parseInt(priceInput.value);
+          
+          salesData.push({
+            date: salesDate,
+            productCode: productSelect.value,
+            quantity: quantity,
+            amount: quantity * price,
+            registeredBy: sessionStorage.getItem('userName')
+          });
+        }
+      });
+      
+      if (salesData.length === 0) {
+        showNotification('error', '商品を選択してください');
+        return;
+      }
+      
+      // 確認
+      if (!confirm(`${salesData.length}件の売上データを送信しますか？`)) {
+        return;
+      }
+      
+      // 送信
+      showLoading(true);
+      const submitBtn = document.getElementById('submit-btn');
+      submitBtn.disabled = true;
+      
+      try {
+        const response = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            action: 'addSales',
+            data: salesData
+          })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+          showNotification('success', '✅ ' + result.message);
+          
+          // フォームをリセット
+          document.getElementById('sales-tbody').innerHTML = '';
+          salesRows = [];
+          addSalesRow();
+          updateTotalAmount();
+        } else {
+          showNotification('error', '❌ ' + result.message);
+        }
+      } catch (error) {
+        showNotification('error', '送信エラー: ' + error.message);
+      } finally {
+        showLoading(false);
+        submitBtn.disabled = false;
+      }
+    }
+    
+    // ===== 通知表示 =====
+    function showNotification(type, message) {
+      const notification = document.getElementById('notification');
+      notification.className = `notification ${type} show`;
+      notification.textContent = message;
+      
+      setTimeout(() => {
+        notification.classList.remove('show');
+      }, 3000);
+    }
+    
+    // ===== ローディング表示 =====
+    function showLoading(show) {
+      const overlay = document.getElementById('loading-overlay');
+      overlay.classList.toggle('show', show);
+    }
+    
+    // ===== ログアウト =====
+    function logout() {
+      if (confirm('ログアウトしますか？')) {
+        sessionStorage.clear();
+        window.location.href = 'index.html';
+      }
+    }
+  </script>
+</body>
+</html>

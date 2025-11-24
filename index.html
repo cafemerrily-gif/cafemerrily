@@ -3,228 +3,546 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MERRILY カフェ管理システム</title>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  <title>ログイン - MERRILY 管理システム</title>
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; }
-    body { font-family: system-ui, -apple-system, sans-serif; background: #f5f5f5; }
-    .container { max-width: 1200px; margin: 0 auto; padding: 20px; }
-    .card { background: white; border-radius: 8px; padding: 20px; margin-bottom: 20px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
-    .btn { padding: 10px 20px; border: none; border-radius: 6px; cursor: pointer; font-weight: 600; }
-    .btn-primary { background: #2D8B5F; color: white; }
-    .btn-secondary { background: #ddd; color: #333; }
-    .error { background: #fee; color: #c00; padding: 12px; border-radius: 6px; margin: 10px 0; }
-    .success { background: #e8f5e9; color: #2e7d32; padding: 12px; border-radius: 6px; margin: 10px 0; }
-    .loading { text-align: center; padding: 40px; }
-    input, select { width: 100%; padding: 10px; border: 1px solid #ddd; border-radius: 6px; margin: 8px 0; }
-    label { display: block; margin: 10px 0 5px; font-weight: 500; }
-    h1 { color: #2D8B5F; margin-bottom: 20px; }
-    h2 { margin-bottom: 15px; }
-    .debug { background: #f0f0f0; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 12px; white-space: pre-wrap; max-height: 300px; overflow-y: auto; }
+    /* ===== リセット & 基本設定 ===== */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, #F5F5DC 0%, #E8DCC4 100%);
+      min-height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    /* ===== ロゴ & メインカラー ===== */
+    :root {
+      --primary-brown: #8B4513;
+      --primary-green: #2E7D32;
+      --accent-orange: #FF9800;
+      --bg-light: #FFFFFF;
+      --text-dark: #3E2723;
+      --success: #4CAF50;
+      --error: #F44336;
+      --warning: #FFC107;
+    }
+    
+    /* ===== ログインコンテナ ===== */
+    .login-container {
+      background: var(--bg-light);
+      border-radius: 20px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      padding: 50px 40px;
+      width: 100%;
+      max-width: 450px;
+      animation: fadeIn 0.5s ease-in;
+    }
+    
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(20px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    /* ===== ロゴエリア ===== */
+    .logo-area {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .logo-area img {
+      width: 200px;
+      height: auto;
+      margin-bottom: 20px;
+    }
+    
+    .logo-area h1 {
+      font-size: 24px;
+      color: var(--primary-brown);
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .logo-area p {
+      font-size: 14px;
+      color: #666;
+    }
+    
+    /* ===== フォーム ===== */
+    .form-group {
+      margin-bottom: 24px;
+    }
+    
+    .form-group label {
+      display: flex;
+      align-items: center;
+      font-size: 14px;
+      font-weight: 500;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+    }
+    
+    .form-group label::before {
+      content: '';
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      margin-right: 8px;
+    }
+    
+    .form-group.email label::before {
+      content: '📧';
+    }
+    
+    .form-group.password label::before {
+      content: '🔒';
+    }
+    
+    .form-group input {
+      width: 100%;
+      padding: 14px 16px;
+      font-size: 16px;
+      border: 2px solid #E0E0E0;
+      border-radius: 10px;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+    
+    .form-group input:focus {
+      outline: none;
+      border-color: var(--primary-brown);
+      box-shadow: 0 0 0 4px rgba(139, 69, 19, 0.1);
+    }
+    
+    /* ===== ボタン ===== */
+    .btn {
+      width: 100%;
+      padding: 16px;
+      font-size: 16px;
+      font-weight: 600;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: all 0.3s;
+      font-family: inherit;
+    }
+    
+    .btn-primary {
+      background: var(--primary-brown);
+      color: white;
+      margin-bottom: 16px;
+    }
+    
+    .btn-primary:hover {
+      background: #6F3709;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(139, 69, 19, 0.3);
+    }
+    
+    .btn-primary:active {
+      transform: translateY(0);
+    }
+    
+    .btn-primary:disabled {
+      background: #CCC;
+      cursor: not-allowed;
+      transform: none;
+    }
+    
+    /* ===== デバッグエリア ===== */
+    .debug-section {
+      margin-top: 40px;
+      padding-top: 30px;
+      border-top: 2px dashed #E0E0E0;
+    }
+    
+    .debug-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #666;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+    }
+    
+    .debug-title::before {
+      content: '🔧';
+      margin-right: 8px;
+    }
+    
+    .btn-test {
+      background: var(--primary-green);
+      color: white;
+    }
+    
+    .btn-test:hover {
+      background: #1B5E20;
+    }
+    
+    /* ===== テスト結果表示 ===== */
+    .test-result {
+      margin-top: 16px;
+      padding: 16px;
+      border-radius: 10px;
+      font-size: 14px;
+      line-height: 1.6;
+      display: none;
+      animation: slideDown 0.3s ease-out;
+    }
+    
+    @keyframes slideDown {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+    
+    .test-result.show {
+      display: block;
+    }
+    
+    .test-result.success {
+      background: #E8F5E9;
+      border: 2px solid var(--success);
+      color: #1B5E20;
+    }
+    
+    .test-result.error {
+      background: #FFEBEE;
+      border: 2px solid var(--error);
+      color: #B71C1C;
+    }
+    
+    .test-result strong {
+      display: block;
+      font-size: 16px;
+      margin-bottom: 8px;
+    }
+    
+    .test-result-details {
+      margin-top: 12px;
+      padding: 12px;
+      background: rgba(255, 255, 255, 0.5);
+      border-radius: 6px;
+      font-size: 12px;
+      font-family: 'Courier New', monospace;
+      white-space: pre-wrap;
+      word-break: break-all;
+    }
+    
+    /* ===== エラーメッセージ ===== */
+    .error-message {
+      margin-top: 16px;
+      padding: 12px 16px;
+      background: #FFEBEE;
+      border: 2px solid var(--error);
+      border-radius: 8px;
+      color: #B71C1C;
+      font-size: 14px;
+      display: none;
+      animation: shake 0.5s;
+    }
+    
+    .error-message.show {
+      display: block;
+    }
+    
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+    
+    /* ===== ローディング ===== */
+    .loading {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 3px solid rgba(255, 255, 255, 0.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 0.8s linear infinite;
+      margin-right: 8px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* ===== API設定ヘルプ ===== */
+    .api-help {
+      margin-top: 16px;
+      padding: 12px;
+      background: #FFF9E6;
+      border: 1px solid var(--warning);
+      border-radius: 8px;
+      font-size: 13px;
+      line-height: 1.6;
+      color: #795548;
+    }
+    
+    .api-help strong {
+      display: block;
+      margin-bottom: 6px;
+    }
+    
+    /* ===== レスポンシブ ===== */
+    @media (max-width: 480px) {
+      .login-container {
+        padding: 30px 24px;
+      }
+      
+      .logo-area h1 {
+        font-size: 20px;
+      }
+      
+      .btn {
+        padding: 14px;
+        font-size: 15px;
+      }
+    }
   </style>
 </head>
 <body>
-  <div id="root"></div>
-  
-  <script type="text/babel">
-    const { useState } = React;
+  <div class="login-container">
+    <!-- ロゴエリア -->
+    <div class="logo-area">
+      <img src="https://via.placeholder.com/200x80/8B4513/FFFFFF?text=MERRILY" alt="MERRILY Logo" id="logo-image">
+      <h1>カフェ総合管理システム</h1>
+      <p>学生運営カフェのための統合管理ツール</p>
+    </div>
     
-    // ★★★ あなたのAPIのURL ★★★
-    const API_URL = 'https://script.google.com/macros/s/AKfycbzR4W8eaZd00mpqxZZ7qWSbDjO2eWUQCgpC8lc1YbIWkdFUXF1e9_uVJibr_MDZGcIGqw/exec';
-
-    async function apiCall(action, params = {}) {
-      const sessionToken = localStorage.getItem('sessionToken');
-      const requestBody = { action, ...params };
-      if (sessionToken) requestBody.sessionToken = sessionToken;
+    <!-- ログインフォーム -->
+    <form id="login-form">
+      <div class="form-group email">
+        <label for="email">メールアドレス</label>
+        <input type="email" id="email" name="email" placeholder="例: yamada@merrily.com" required>
+      </div>
       
-      console.log('📤 API Request:', action);
+      <div class="form-group password">
+        <label for="password">パスワード</label>
+        <input type="password" id="password" name="password" placeholder="パスワードを入力" required>
+      </div>
+      
+      <button type="submit" class="btn btn-primary" id="login-btn">
+        ログイン
+      </button>
+      
+      <!-- エラーメッセージ -->
+      <div class="error-message" id="error-message"></div>
+    </form>
+    
+    <!-- デバッグセクション -->
+    <div class="debug-section">
+      <div class="debug-title">開発者向けツール</div>
+      
+      <button type="button" class="btn btn-test" id="test-api-btn">
+        API接続テスト実行
+      </button>
+      
+      <!-- テスト結果 -->
+      <div class="test-result" id="test-result"></div>
+      
+      <!-- API設定ヘルプ -->
+      <div class="api-help">
+        <strong>⚠️ API設定が必要です</strong>
+        このシステムを使用するには、Google Apps ScriptのURLを設定する必要があります。<br>
+        下記の手順で設定してください：<br>
+        1. Apps Scriptをデプロイ<br>
+        2. 取得したURLを下記に設定<br>
+        3. 「API接続テスト」で確認
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // ===== 設定 =====
+    // ⚠️ ここにApps ScriptのWebアプリURLを設定してください
+    const API_ENDPOINT = 'https://script.google.com/macros/s/AKfycbwkgdkDhmkO1nMMRUWPRml8jDST-XdFQOc9498mjYpkw706NxFPaFGYy3VWepH0S8cB3Q/exec';
+    
+    // ===== DOM要素 =====
+    const loginForm = document.getElementById('login-form');
+    const loginBtn = document.getElementById('login-btn');
+    const testApiBtn = document.getElementById('test-api-btn');
+    const testResult = document.getElementById('test-result');
+    const errorMessage = document.getElementById('error-message');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    
+    // ===== API接続テスト =====
+    testApiBtn.addEventListener('click', async () => {
+      // ボタンを無効化
+      testApiBtn.disabled = true;
+      testApiBtn.innerHTML = '<span class="loading"></span>テスト中...';
+      
+      // 結果エリアをクリア
+      testResult.classList.remove('show', 'success', 'error');
       
       try {
-        const response = await fetch(API_URL, {
+        // API設定チェック
+        if (API_ENDPOINT === 'YOUR_APPS_SCRIPT_URL_HERE') {
+          showTestResult('error', {
+            message: 'API URLが設定されていません',
+            details: 'JavaScriptファイル内の「API_ENDPOINT」変数に、Apps ScriptのWebアプリURLを設定してください。'
+          });
+          return;
+        }
+        
+        const startTime = Date.now();
+        
+        // テストリクエスト送信
+        const response = await fetch(API_ENDPOINT, {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(requestBody),
-          mode: 'cors'
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'test',
+            timestamp: new Date().toISOString()
+          })
         });
         
-        console.log('📥 Response:', response.status, response.statusText);
+        const endTime = Date.now();
+        const responseTime = endTime - startTime;
         
         if (!response.ok) {
-          const text = await response.text();
-          throw new Error(`HTTP ${response.status}: ${text.substring(0, 100)}`);
+          throw new Error(`HTTPエラー: ${response.status}`);
         }
         
-        const contentType = response.headers.get('content-type');
-        let data;
+        const data = await response.json();
         
-        if (contentType?.includes('application/json')) {
-          data = await response.json();
-        } else {
-          const text = await response.text();
-          if (text.includes('<!DOCTYPE') || text.includes('<html')) {
-            throw new Error('HTMLレスポンスを受信。URLが正しいか確認してください。');
-          }
-          data = JSON.parse(text);
-        }
+        // 成功表示
+        showTestResult('success', {
+          message: 'API接続成功！',
+          details: `レスポンスタイム: ${responseTime}ms\nサーバー時刻: ${data.timestamp}\nステータス: ${data.status}`
+        });
         
-        console.log('✅ Success:', data);
-        return data;
       } catch (error) {
-        console.error('❌ Error:', error);
-        throw error;
+        // エラー表示
+        showTestResult('error', {
+          message: 'API接続失敗',
+          details: `エラー内容: ${error.message}\n\n対処方法:\n1. Apps ScriptのURLが正しいか確認\n2. Webアプリが正しくデプロイされているか確認\n3. アクセス権限が「全員」になっているか確認`
+        });
+      } finally {
+        // ボタンを有効化
+        testApiBtn.disabled = false;
+        testApiBtn.textContent = 'API接続テスト実行';
       }
+    });
+    
+    // ===== テスト結果表示 =====
+    function showTestResult(status, data) {
+      testResult.classList.add('show', status);
+      
+      const icon = status === 'success' ? '✅' : '❌';
+      const title = status === 'success' ? '接続成功！' : '接続失敗';
+      
+      testResult.innerHTML = `
+        ${icon} <strong>${title}</strong><br>
+        ${data.message}
+        ${data.details ? `<div class="test-result-details">${data.details}</div>` : ''}
+      `;
     }
-
-    function App() {
-      const [status, setStatus] = useState('');
-      const [loading, setLoading] = useState(false);
-      const [debugInfo, setDebugInfo] = useState('');
-      const [email, setEmail] = useState('');
-      const [password, setPassword] = useState('');
-
-      const testConnection = async () => {
-        setLoading(true);
-        setStatus('');
-        setDebugInfo('');
+    
+    // ===== ログイン処理 =====
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      // エラーメッセージをクリア
+      errorMessage.classList.remove('show');
+      
+      // API設定チェック
+      if (API_ENDPOINT === 'YOUR_APPS_SCRIPT_URL_HERE') {
+        showError('API URLが設定されていません。先にAPI接続テストを実行してください。');
+        return;
+      }
+      
+      // ボタンを無効化
+      loginBtn.disabled = true;
+      loginBtn.innerHTML = '<span class="loading"></span>ログイン中...';
+      
+      try {
+        const response = await fetch(API_ENDPOINT, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            action: 'login',
+            email: emailInput.value,
+            password: passwordInput.value
+          })
+        });
         
-        try {
-          const result = await fetch(API_URL, { method: 'GET' });
-          const data = await result.json();
-          setStatus('success');
-          setDebugInfo(JSON.stringify(data, null, 2));
-        } catch (error) {
-          setStatus('error');
-          setDebugInfo(error.message);
-        } finally {
-          setLoading(false);
+        if (!response.ok) {
+          throw new Error('サーバーエラーが発生しました');
         }
-      };
-
-      const handleLogin = async (e) => {
-        e.preventDefault();
-        setLoading(true);
-        setStatus('');
-        setDebugInfo('');
         
-        try {
-          const result = await apiCall('login', { email, password });
+        const result = await response.json();
+        
+        if (result.success) {
+          // ログイン成功
+          // セッション情報を保存
+          sessionStorage.setItem('userId', result.data.userId);
+          sessionStorage.setItem('userName', result.data.name);
+          sessionStorage.setItem('userEmail', result.data.email);
+          sessionStorage.setItem('userDepartment', result.data.department);
+          sessionStorage.setItem('userPermission', result.data.permissionLevel);
           
-          if (result.success) {
-            setStatus('success');
-            setDebugInfo('ログイン成功！\n' + JSON.stringify(result.data, null, 2));
-            localStorage.setItem('sessionToken', result.data.sessionToken);
-          } else {
-            setStatus('error');
-            setDebugInfo(result.message);
-          }
-        } catch (error) {
-          setStatus('error');
-          setDebugInfo(error.message);
-        } finally {
-          setLoading(false);
+          // 成功メッセージ表示（短時間）
+          loginBtn.innerHTML = '✅ ログイン成功！';
+          loginBtn.style.background = '#4CAF50';
+          
+          // ダッシュボードへ遷移（1秒後）
+          setTimeout(() => {
+            window.location.href = 'accounting.html';
+          }, 1000);
+          
+        } else {
+          // ログイン失敗
+          showError(result.message);
         }
-      };
-
-      return (
-        <div className="container">
-          <h1>🍵 MERRILY カフェ管理システム</h1>
-          
-          <div className="card">
-            <h2>API接続テスト</h2>
-            <p style={{marginBottom: '10px'}}>まず、APIに接続できるか確認しましょう。</p>
-            <button 
-              className="btn btn-primary" 
-              onClick={testConnection}
-              disabled={loading}
-            >
-              {loading ? '接続中...' : 'API接続をテスト'}
-            </button>
-            
-            {status === 'success' && (
-              <div className="success" style={{marginTop: '10px'}}>
-                ✅ API接続成功！サーバーからレスポンスを受信しました。
-              </div>
-            )}
-            
-            {status === 'error' && (
-              <div className="error" style={{marginTop: '10px'}}>
-                ❌ 接続エラー: {debugInfo}
-              </div>
-            )}
-            
-            {debugInfo && status === 'success' && (
-              <div className="debug" style={{marginTop: '10px'}}>
-                {debugInfo}
-              </div>
-            )}
-          </div>
-
-          <div className="card">
-            <h2>ログインテスト</h2>
-            <form onSubmit={handleLogin}>
-              <label>メールアドレス</label>
-              <input 
-                type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="test@example.com"
-                required
-              />
-              
-              <label>パスワード</label>
-              <input 
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                placeholder="password"
-                required
-              />
-              
-              <button 
-                type="submit"
-                className="btn btn-primary"
-                disabled={loading}
-                style={{marginTop: '10px'}}
-              >
-                {loading ? 'ログイン中...' : 'ログイン'}
-              </button>
-            </form>
-          </div>
-
-          <div className="card">
-            <h2>📋 トラブルシューティング</h2>
-            <ul style={{paddingLeft: '20px', lineHeight: '1.8'}}>
-              <li>API接続テストが失敗する場合：
-                <ul style={{paddingLeft: '20px', marginTop: '5px'}}>
-                  <li>Google Apps Scriptの「アクセスできるユーザー」が「全員」になっているか確認</li>
-                  <li>URLが <code>/exec</code> で終わっているか確認</li>
-                  <li>ブラウザのコンソール（F12）でエラー詳細を確認</li>
-                </ul>
-              </li>
-              <li>ログインが失敗する場合：
-                <ul style={{paddingLeft: '20px', marginTop: '5px'}}>
-                  <li>スプレッドシートに「メンバー管理」シートがあるか確認</li>
-                  <li>メールアドレスとパスワードが正しく登録されているか確認</li>
-                </ul>
-              </li>
-            </ul>
-          </div>
-
-          <div className="card">
-            <h2>🔍 現在の設定</h2>
-            <div className="debug">
-API URL: {API_URL}
-ファイルサイズ: 軽量版（約15KB）
-Reactバージョン: 18
-            </div>
-          </div>
-        </div>
-      );
+        
+      } catch (error) {
+        showError('ログインに失敗しました: ' + error.message);
+      } finally {
+        // ボタンを有効化（エラー時のみ）
+        if (loginBtn.textContent !== '✅ ログイン成功！') {
+          loginBtn.disabled = false;
+          loginBtn.textContent = 'ログイン';
+        }
+      }
+    });
+    
+    // ===== エラー表示 =====
+    function showError(message) {
+      errorMessage.textContent = '❌ ' + message;
+      errorMessage.classList.add('show');
     }
-
-    ReactDOM.createRoot(document.getElementById('root')).render(<App />);
+    
+    // ===== ページ読み込み時 =====
+    window.addEventListener('DOMContentLoaded', () => {
+      // すでにログイン済みの場合はリダイレクト
+      if (sessionStorage.getItem('userId')) {
+        window.location.href = 'accounting.html';
+      }
+    });
   </script>
 </body>
 </html>
